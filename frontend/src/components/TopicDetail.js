@@ -92,7 +92,7 @@ const TopicDetail = () => {
           <div className="topic-item" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
             <div style={{ display: 'flex', gap: '12px', width: '100%', marginBottom: '15px' }}>
               <img 
-                src={topic.author.avatar || 'https://i.imgur.com/8QmIp.png'} 
+                src={topic.author.avatar || 'https://i.imgur.com/8QmIp.png'}
                 alt={`${topic.author.username}的头像`} 
                 className="avatar"
               />

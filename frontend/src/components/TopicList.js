@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const TopicList = ({ topics }) => {
@@ -23,12 +22,31 @@ const TopicList = ({ topics }) => {
     }
   };
 
+  if (!topics || topics.length === 0) {
+    return (
+      <div className="topic-list">
+        <div style={{
+          padding: '40px 20px',
+          textAlign: 'center',
+          color: '#666',
+          fontSize: '16px'
+        }}>
+          <div style={{ marginBottom: '10px' }}>🌟</div>
+          <div>暂无主题</div>
+          <div style={{ fontSize: '14px', marginTop: '8px' }}>
+            成为第一个发布主题的人吧！
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="topic-list">
       {topics.map((topic) => (
         <div key={topic.id} className="topic-item">
           <img 
-            src={topic.author.avatar || 'https://i.imgur.com/8QmIp.png'} 
+            src={topic.author.avatar || 'https://i.imgur.com/8QmIp.png'}
             alt={`${topic.author.username}的头像`} 
             className="avatar"
           />

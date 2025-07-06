@@ -27,14 +27,21 @@ public class User {
     @Email
     @Column(unique = true)
     private String email;
-    
-    @NotBlank
+
     @Size(min = 6)
-    private String password;
-    
+    private String password; // OAuth用户可以为null
+
     private String avatar;
-    
+
     private String bio;
+
+    // OAuth相关字段
+    private String githubId;
+
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider = AuthProvider.LOCAL;
+
+    private String providerId;
     
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -55,6 +62,13 @@ public class User {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.provider = AuthProvider.LOCAL;
+    }
+
+    public User(String username, String email, AuthProvider provider) {
+        this.username = username;
+        this.email = email;
+        this.provider = provider;
     }
     
     // Getters and Setters
@@ -136,5 +150,29 @@ public class User {
     
     public void setReplies(List<Reply> replies) {
         this.replies = replies;
+    }
+
+    public String getGithubId() {
+        return githubId;
+    }
+
+    public void setGithubId(String githubId) {
+        this.githubId = githubId;
+    }
+
+    public AuthProvider getProvider() {
+        return provider;
+    }
+
+    public void setProvider(AuthProvider provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 }

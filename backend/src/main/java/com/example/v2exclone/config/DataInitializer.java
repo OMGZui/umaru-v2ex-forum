@@ -24,6 +24,12 @@ public class DataInitializer implements CommandLineRunner {
     
     @Override
     public void run(String... args) throws Exception {
+        // 检查是否已有数据，避免重复初始化
+        if (userRepository.count() > 0) {
+            System.out.println("数据已存在，跳过初始化");
+            return;
+        }
+
         // 创建用户
         User user1 = new User("小埋酱", "umaru@example.com", "password123");
         user1.setAvatar("https://i.imgur.com/8QmIp.png");
@@ -31,7 +37,7 @@ public class DataInitializer implements CommandLineRunner {
         userRepository.save(user1);
 
         User user2 = new User("干物妹小埋", "himouto@example.com", "password123");
-        user2.setAvatar("https://i.imgur.com/VQWPsBS.png");
+        user2.setAvatar("https://i.imgur.com/6VBx3.png");
         user2.setBio("在家就是干物妹模式");
         userRepository.save(user2);
 

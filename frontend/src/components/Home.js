@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { topicService } from '../services/api';
 import TopicList from './TopicList';
 import Sidebar from './Sidebar';
@@ -7,14 +7,19 @@ const Home = () => {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dataFetched, setDataFetched] = useState(false);
 
   useEffect(() => {
+    if (dataFetched) return; // 防止重复请求
+
     const fetchTopics = async () => {
       try {
         setLoading(true);
+        console.log('Fetching topics...');
         const response = await topicService.getRecentTopics();
         setTopics(response.data);
         setError(null);
+        setDataFetched(true);
       } catch (err) {
         console.error('Error fetching topics:', err);
         setError('获取主题列表失败');
@@ -24,7 +29,7 @@ const Home = () => {
     };
 
     fetchTopics();
-  }, []);
+  }, [dataFetched]);
 
   if (loading) {
     return (

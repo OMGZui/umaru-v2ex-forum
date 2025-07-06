@@ -1,23 +1,36 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: password
-  
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-  
+    url: jdbc:postgresql://localhost:5432/v2ex_clone
+    driver-class-name: org.postgresql.Driver
+    username: omgzui
+    password:
+
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID:Ov23liKabmHG6M4htQxa}
+            client-secret: ${GITHUB_CLIENT_SECRET:52769945e87f43956a38475be526a91f2571b6d2}
+            redirect-uri: http://localhost:8080/login/oauth2/code/github
+            scope:
+              - user:email
+              - read:user
+        provider:
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+            user-name-attribute: id
   
   web:
     cors:
@@ -26,8 +39,33 @@ spring:
       allowed-headers: "*"
       allow-credentials: true
 
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: # 如果Redis设置了密码，在这里配置
+      database: 0
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
 server:
   port: 8080
+
+# JWT配置
+jwt:
+  secret: ${JWT_SECRET:v2ex-clone-jwt-secret-key-2025-very-secure-random-string-for-token-signing-abcdef123456789}
+  expiration: 86400000 # 24小时
+
+# OAuth回调URL
+app:
+  oauth2:
+    authorized-redirect-uris: http://localhost:3000/oauth2/redirect
 
 logging:
   level:

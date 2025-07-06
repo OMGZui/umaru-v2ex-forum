@@ -1,16 +1,30 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
+import { nodeService } from '../services/api';
 
 const Sidebar = () => {
-  const hotNodes = [
-    { name: '程序员', slug: 'programmer' },
-    { name: 'Python', slug: 'python' },
-    { name: 'JavaScript', slug: 'javascript' },
-    { name: 'Apple', slug: 'apple' },
-    { name: '创业', slug: 'startup' },
-    { name: '设计', slug: 'design' },
-    { name: '生活', slug: 'life' },
-    { name: '分享发现', slug: 'share' },
-  ];
+  const [hotNodes, setHotNodes] = useState([]);
+
+  useEffect(() => {
+    const fetchNodes = async () => {
+      try {
+        const response = await nodeService.getAllNodes();
+        // 取前8个节点作为热门节点
+        setHotNodes(response.data.slice(0, 8));
+      } catch (error) {
+        console.error('Error fetching nodes:', error);
+        // 如果获取失败，使用默认数据
+        setHotNodes([
+          { name: '技术', slug: 'tech' },
+          { name: '分享创造', slug: 'share' },
+          { name: 'Apple', slug: 'apple' },
+          { name: '问与答', slug: 'qna' },
+          { name: '创业', slug: 'startup' },
+        ]);
+      }
+    };
+
+    fetchNodes();
+  }, []);
 
   const stats = {
     members: '123,456',
@@ -22,7 +36,7 @@ const Sidebar = () => {
 
   const activeMembers = [
     'https://i.imgur.com/8QmIp.png',
-    'https://i.imgur.com/VQWPsBS.png',
+    'https://i.imgur.com/6VBx3.png',
     'https://i.imgur.com/kH25Y.png',
     'https://i.imgur.com/2QoLk.png',
     'https://i.imgur.com/9QmIp.png',
@@ -35,15 +49,26 @@ const Sidebar = () => {
         <div className="sidebar-header">热门节点</div>
         <div className="sidebar-content">
           <div className="node-list">
-            {hotNodes.map((node) => (
-              <a 
-                key={node.slug} 
-                href={`/node/${node.slug}`} 
-                className="node-tag"
-              >
-                {node.name}
-              </a>
-            ))}
+            {hotNodes.length > 0 ? (
+              hotNodes.map((node) => (
+                <a
+                  key={node.slug}
+                  href={`/node/${node.slug}`}
+                  className="node-tag"
+                >
+                  {node.name}
+                </a>
+              ))
+            ) : (
+              <div style={{
+                padding: '20px',
+                textAlign: 'center',
+                color: '#999',
+                fontSize: '14px'
+              }}>
+                暂无节点
+              </div>
+            )}
           </div>
         </div>
       </div>
