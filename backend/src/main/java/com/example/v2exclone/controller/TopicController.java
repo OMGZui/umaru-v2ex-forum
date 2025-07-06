@@ -1,11 +1,16 @@
 package com.example.v2exclone.controller;
 
 import com.example.v2exclone.dto.TopicDTO;
+import com.example.v2exclone.entity.User;
 import com.example.v2exclone.service.TopicService;
+import com.example.v2exclone.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import lombok.Data;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +19,12 @@ import java.util.Optional;
 @RequestMapping("/api/topics")
 @CrossOrigin(origins = "http://localhost:3000")
 public class TopicController {
-    
+
     @Autowired
     private TopicService topicService;
+
+    @Autowired
+    private UserService userService;
     
     @GetMapping
     public ResponseEntity<Page<TopicDTO>> getAllTopics(
@@ -40,12 +48,26 @@ public class TopicController {
     }
     
     @PostMapping
-    public ResponseEntity<TopicDTO> createTopic(@RequestBody CreateTopicRequest request) {
+    public ResponseEntity<TopicDTO> createTopic(
+            @RequestBody CreateTopicRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            // 检查用户是否已登录
+            if (userDetails == null) {
+                return ResponseEntity.status(401).build();
+            }
+
+            // 从UserDetails中获取用户信息
+            Optional<User> userOptional = userService.findByUsername(userDetails.getUsername());
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.status(401).build();
+            }
+
+            User currentUser = userOptional.get();
             TopicDTO topic = topicService.createTopic(
                 request.getTitle(),
                 request.getContent(),
-                request.getAuthorId(),
+                currentUser.getId(),
                 request.getNodeId()
             );
             return ResponseEntity.ok(topic);
@@ -53,45 +75,62 @@ public class TopicController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TopicDTO> updateTopic(
+            @PathVariable Long id,
+            @RequestBody UpdateTopicRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            // 检查用户是否已登录
+            if (userDetails == null) {
+                return ResponseEntity.status(401).build();
+            }
+
+            // 从UserDetails中获取用户信息
+            Optional<User> userOptional = userService.findByUsername(userDetails.getUsername());
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.status(401).build();
+            }
+
+            User currentUser = userOptional.get();
+
+            // 检查主题是否存在以及用户是否有权限编辑
+            Optional<TopicDTO> existingTopicOpt = topicService.getTopicById(id);
+            if (!existingTopicOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            TopicDTO existingTopic = existingTopicOpt.get();
+            if (!existingTopic.getAuthor().getId().equals(currentUser.getId())) {
+                return ResponseEntity.status(403).build(); // 禁止访问
+            }
+
+            TopicDTO updatedTopic = topicService.updateTopic(
+                id,
+                request.getTitle(),
+                request.getContent(),
+                request.getNodeId()
+            );
+            return ResponseEntity.ok(updatedTopic);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
     
     // Inner class for request body
+    @Data
     public static class CreateTopicRequest {
         private String title;
         private String content;
-        private Long authorId;
         private Long nodeId;
-        
-        // Getters and Setters
-        public String getTitle() {
-            return title;
-        }
-        
-        public void setTitle(String title) {
-            this.title = title;
-        }
-        
-        public String getContent() {
-            return content;
-        }
-        
-        public void setContent(String content) {
-            this.content = content;
-        }
-        
-        public Long getAuthorId() {
-            return authorId;
-        }
-        
-        public void setAuthorId(Long authorId) {
-            this.authorId = authorId;
-        }
-        
-        public Long getNodeId() {
-            return nodeId;
-        }
-        
-        public void setNodeId(Long nodeId) {
-            this.nodeId = nodeId;
-        }
+    }
+
+    // Inner class for update request body
+    @Data
+    public static class UpdateTopicRequest {
+        private String title;
+        private String content;
+        private Long nodeId;
     }
 }

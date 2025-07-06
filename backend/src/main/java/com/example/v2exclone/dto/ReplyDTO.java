@@ -11,14 +11,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TopicDTO {
+public class ReplyDTO {
     private Long id;
-    private String title;
     private String content;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private Integer viewCount;
-    private Integer replyCount;
     private UserDTO author;
-    private NodeDTO node;
+    private Long topicId;
 }

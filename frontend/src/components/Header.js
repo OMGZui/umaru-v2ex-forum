@@ -1,9 +1,11 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import useAvatarCache from '../hooks/useAvatarCache';
 
 const Header = () => {
   const { user, logout, isAuthenticated } = useAuth();
+  const { getAvatarUrl } = useAvatarCache();
 
   const handleLogout = async () => {
     if (window.confirm('确定要退出登录吗？')) {
@@ -31,8 +33,11 @@ const Header = () => {
           <div className="user-actions">
             {isAuthenticated ? (
               <div className="user-menu">
+                <Link to="/create-topic" className="btn create-topic-btn">
+                  发布主题
+                </Link>
                 <img
-                  src={user.avatar || 'https://i.imgur.com/8QmIp.png'}
+                  src={getAvatarUrl(user.id, user.avatar || 'https://i.imgur.com/8QmIp.png')}
                   alt={user.username}
                   className="user-avatar"
                 />

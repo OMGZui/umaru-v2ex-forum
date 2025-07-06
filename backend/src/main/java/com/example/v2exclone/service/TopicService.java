@@ -9,6 +9,7 @@ import com.example.v2exclone.entity.Node;
 import com.example.v2exclone.repository.TopicRepository;
 import com.example.v2exclone.repository.UserRepository;
 import com.example.v2exclone.repository.NodeRepository;
+import com.example.v2exclone.repository.ReplyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,12 +27,15 @@ public class TopicService {
     
     @Autowired
     private TopicRepository topicRepository;
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private ReplyRepository replyRepository;
     
     public Page<TopicDTO> getAllTopics(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -58,21 +62,43 @@ public class TopicService {
     public TopicDTO createTopic(String title, String content, Long authorId, Long nodeId) {
         Optional<User> author = userRepository.findById(authorId);
         Optional<Node> node = nodeRepository.findById(nodeId);
-        
+
         if (author.isPresent() && node.isPresent()) {
-            Topic topic = new Topic(title, content, author.get(), node.get());
+            Topic topic = Topic.builder()
+                    .title(title)
+                    .content(content)
+                    .author(author.get())
+                    .node(node.get())
+                    .build();
             Topic savedTopic = topicRepository.save(topic);
             return convertToDTO(savedTopic);
         }
         throw new RuntimeException("Author or Node not found");
     }
-    
+
+    public TopicDTO updateTopic(Long topicId, String title, String content, Long nodeId) {
+        Optional<Topic> topicOptional = topicRepository.findById(topicId);
+        Optional<Node> nodeOptional = nodeRepository.findById(nodeId);
+
+        if (topicOptional.isPresent() && nodeOptional.isPresent()) {
+            Topic topic = topicOptional.get();
+            topic.setTitle(title);
+            topic.setContent(content);
+            topic.setNode(nodeOptional.get());
+            topic.setUpdatedAt(java.time.LocalDateTime.now());
+
+            Topic savedTopic = topicRepository.save(topic);
+            return convertToDTO(savedTopic);
+        }
+        throw new RuntimeException("Topic or Node not found");
+    }
+
     public void incrementReplyCount(Long topicId) {
-        Optional<Topic> topic = topicRepository.findById(topicId);
-        if (topic.isPresent()) {
-            Topic t = topic.get();
-            t.setReplyCount(t.getReplyCount() + 1);
-            topicRepository.save(t);
+        Optional<Topic> topicOptional = topicRepository.findById(topicId);
+        if (topicOptional.isPresent()) {
+            Topic topic = topicOptional.get();
+            topic.setReplyCount(topic.getReplyCount() + 1);
+            topicRepository.save(topic);
         }
     }
     
@@ -85,7 +111,7 @@ public class TopicService {
             topic.getAuthor().getBio(),
             topic.getAuthor().getCreatedAt()
         );
-        
+
         NodeDTO nodeDTO = new NodeDTO(
             topic.getNode().getId(),
             topic.getNode().getName(),
@@ -93,7 +119,10 @@ public class TopicService {
             topic.getNode().getDescription(),
             topic.getNode().getCreatedAt()
         );
-        
+
+        // 获取真实的回复数量
+        long actualReplyCount = replyRepository.countByTopic(topic);
+
         return new TopicDTO(
             topic.getId(),
             topic.getTitle(),
@@ -101,7 +130,7 @@ public class TopicService {
             topic.getCreatedAt(),
             topic.getUpdatedAt(),
             topic.getViewCount(),
-            topic.getReplyCount(),
+            (int) actualReplyCount,  // 使用真实的回复数
             authorDTO,
             nodeDTO
         );

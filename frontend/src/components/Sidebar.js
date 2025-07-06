@@ -1,8 +1,22 @@
 import { useState, useEffect } from 'react';
-import { nodeService } from '../services/api';
+import { nodeService, statsService } from '../services/api';
+import useAvatarCache from '../hooks/useAvatarCache';
 
 const Sidebar = () => {
   const [hotNodes, setHotNodes] = useState([]);
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    totalTopics: 0,
+    totalReplies: 0,
+    todayTopics: 0,
+    todayReplies: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [activeMembers, setActiveMembers] = useState([]);
+  const [activeMembersLoading, setActiveMembersLoading] = useState(true);
+
+  // 使用头像缓存Hook
+  const { processActiveMembersAvatars, batchPreloadAvatars } = useAvatarCache();
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -26,22 +40,103 @@ const Sidebar = () => {
     fetchNodes();
   }, []);
 
-  const stats = {
-    members: '123,456',
-    topics: '234,567',
-    replies: '1,234,567',
-    todayTopics: '89',
-    todayReplies: '456',
-  };
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        const response = await statsService.getCommunityStats();
+        setStats({
+          totalMembers: response.data.totalMembers,
+          totalTopics: response.data.totalTopics,
+          totalReplies: response.data.totalReplies,
+          todayTopics: response.data.todayTopics,
+          todayReplies: response.data.todayReplies,
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        // 如果获取失败，使用默认数据
+        setStats({
+          totalMembers: 123456,
+          totalTopics: 234567,
+          totalReplies: 1234567,
+          todayTopics: 89,
+          todayReplies: 456,
+        });
+      } finally {
+        setStatsLoading(false);
+      }
+    };
 
-  const activeMembers = [
-    'https://i.imgur.com/8QmIp.png',
-    'https://i.imgur.com/6VBx3.png',
-    'https://i.imgur.com/kH25Y.png',
-    'https://i.imgur.com/2QoLk.png',
-    'https://i.imgur.com/9QmIp.png',
-    'https://i.imgur.com/8QmIp.png',
-  ];
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    const fetchActiveMembers = async () => {
+      try {
+        setActiveMembersLoading(true);
+        const response = await statsService.getActiveMembers();
+
+        // 使用头像缓存处理活跃会员数据
+        const membersWithCache = processActiveMembersAvatars(response.data);
+        setActiveMembers(membersWithCache);
+
+        // 预加载头像（异步进行，不阻塞UI）
+        if (response.data && response.data.length > 0) {
+          const avatarList = response.data.map(member => ({
+            userId: member.id,
+            avatarUrl: member.avatar
+          })).filter(item => item.avatarUrl);
+
+          batchPreloadAvatars(avatarList).then(successCount => {
+            if (successCount > 0) {
+              console.log(`Successfully preloaded ${successCount} avatars`);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching active members:', error);
+        // 如果获取失败，使用默认数据
+        const defaultMembers = [
+          {
+            id: 1,
+            username: '小埋',
+            avatar: 'https://i.imgur.com/8QmIp.png',
+            activityScore: 100
+          },
+          {
+            id: 2,
+            username: '用户2',
+            avatar: 'https://i.imgur.com/6VBx3.png',
+            activityScore: 80
+          },
+          {
+            id: 3,
+            username: '用户3',
+            avatar: 'https://i.imgur.com/kH25Y.png',
+            activityScore: 60
+          }
+        ];
+
+        // 对默认数据也应用缓存
+        const membersWithCache = processActiveMembersAvatars(defaultMembers);
+        setActiveMembers(membersWithCache);
+      } finally {
+        setActiveMembersLoading(false);
+      }
+    };
+
+    fetchActiveMembers();
+  }, [processActiveMembersAvatars, batchPreloadAvatars]);
+
+  // 格式化数字显示
+  const formatNumber = (num) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toLocaleString();
+  };
 
   return (
     <aside className="sidebar">
@@ -76,42 +171,73 @@ const Sidebar = () => {
       <div className="sidebar-box">
         <div className="sidebar-header">社区状态</div>
         <div className="sidebar-content">
-          <div className="stats-item">
-            <span>注册会员</span>
-            <span>{stats.members}</span>
-          </div>
-          <div className="stats-item">
-            <span>主题总数</span>
-            <span>{stats.topics}</span>
-          </div>
-          <div className="stats-item">
-            <span>回复总数</span>
-            <span>{stats.replies}</span>
-          </div>
-          <div className="stats-item">
-            <span>今日主题</span>
-            <span>{stats.todayTopics}</span>
-          </div>
-          <div className="stats-item">
-            <span>今日回复</span>
-            <span>{stats.todayReplies}</span>
-          </div>
+          {statsLoading ? (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
+              加载中...
+            </div>
+          ) : (
+            <>
+              <div className="stats-item">
+                <span>注册会员</span>
+                <span>{formatNumber(stats.totalMembers)}</span>
+              </div>
+              <div className="stats-item">
+                <span>主题总数</span>
+                <span>{formatNumber(stats.totalTopics)}</span>
+              </div>
+              <div className="stats-item">
+                <span>回复总数</span>
+                <span>{formatNumber(stats.totalReplies)}</span>
+              </div>
+              <div className="stats-item">
+                <span>今日主题</span>
+                <span>{formatNumber(stats.todayTopics)}</span>
+              </div>
+              <div className="stats-item">
+                <span>今日回复</span>
+                <span>{formatNumber(stats.todayReplies)}</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       <div className="sidebar-box">
         <div className="sidebar-header">最近活跃会员</div>
         <div className="sidebar-content">
-          <div className="active-members">
-            {activeMembers.map((avatar, index) => (
-              <img 
-                key={index}
-                src={avatar} 
-                alt="活跃会员" 
-                className="member-avatar"
-              />
-            ))}
-          </div>
+          {activeMembersLoading ? (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
+              加载中...
+            </div>
+          ) : (
+            <div className="active-members">
+              {activeMembers.length > 0 ? (
+                activeMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className="member-item"
+                    title={`${member.username} (活跃度: ${member.activityScore})`}
+                  >
+                    <img
+                      src={member.avatar || 'https://i.imgur.com/8QmIp.png'}
+                      alt={member.username}
+                      className="member-avatar"
+                    />
+                    <span className="member-name">{member.username}</span>
+                  </div>
+                ))
+              ) : (
+                <div style={{
+                  padding: '20px',
+                  textAlign: 'center',
+                  color: '#999',
+                  fontSize: '14px'
+                }}>
+                  暂无活跃会员
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </aside>

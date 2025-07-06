@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -24,4 +25,8 @@ public interface TopicRepository extends JpaRepository<Topic, Long> {
     Page<Topic> findHotTopics(Pageable pageable);
     
     List<Topic> findTop10ByOrderByCreatedAtDesc();
+
+    // 统计相关查询
+    @Query("SELECT COUNT(t) FROM Topic t WHERE t.createdAt >= :startDate")
+    long countByCreatedAtAfter(LocalDateTime startDate);
 }

@@ -79,6 +79,38 @@ export const topicService = {
   createTopic: (topicData) => {
     return api.post('/topics', topicData);
   },
+
+  // 更新主题
+  updateTopic: (id, topicData) => {
+    return api.put(`/topics/${id}`, topicData);
+  },
+};
+
+export const replyService = {
+  // 获取主题的所有回复
+  getRepliesByTopic: (topicId) => {
+    return api.get(`/replies/topic/${topicId}`);
+  },
+
+  // 分页获取主题的回复
+  getRepliesByTopicPaged: (topicId, page = 0, size = 20) => {
+    return api.get(`/replies/topic/${topicId}/page?page=${page}&size=${size}`);
+  },
+
+  // 创建新回复
+  createReply: (replyData) => {
+    return api.post('/replies', replyData);
+  },
+
+  // 获取回复数量
+  getReplyCountByTopic: (topicId) => {
+    return api.get(`/replies/topic/${topicId}/count`);
+  },
+
+  // 获取用户的回复
+  getRepliesByAuthor: (authorId, page = 0, size = 20) => {
+    return api.get(`/replies/author/${authorId}?page=${page}&size=${size}`);
+  },
 };
 
 export const userService = {
@@ -90,6 +122,48 @@ export const userService = {
   // 根据用户名获取用户信息
   getUserByUsername: (username) => {
     return api.get(`/users/${username}`);
+  },
+};
+
+export const statsService = {
+  // 获取社区统计数据
+  getCommunityStats: () => {
+    return api.get('/stats/community');
+  },
+
+  // 获取注册会员总数
+  getTotalMembers: () => {
+    return api.get('/stats/members');
+  },
+
+  // 获取主题总数
+  getTotalTopics: () => {
+    return api.get('/stats/topics');
+  },
+
+  // 获取回复总数
+  getTotalReplies: () => {
+    return api.get('/stats/replies');
+  },
+
+  // 获取今日主题数
+  getTodayTopics: () => {
+    return api.get('/stats/today/topics');
+  },
+
+  // 获取今日回复数
+  getTodayReplies: () => {
+    return api.get('/stats/today/replies');
+  },
+
+  // 获取最近活跃会员
+  getActiveMembers: () => {
+    return api.get('/stats/active-members');
+  },
+
+  // 获取最近活跃会员（自定义参数）
+  getActiveMembersCustom: (days = 7, limit = 6) => {
+    return api.get(`/stats/active-members/custom?days=${days}&limit=${limit}`);
   },
 };
 

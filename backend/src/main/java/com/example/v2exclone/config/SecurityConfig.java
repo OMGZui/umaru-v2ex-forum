@@ -3,6 +3,7 @@ package com.example.v2exclone.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -32,7 +33,13 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/", "/error", "/favicon.ico").permitAll()
-                .requestMatchers("/api/topics/**", "/api/nodes/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/topics/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/topics/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/topics/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/replies/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/replies/**").authenticated()
+                .requestMatchers("/api/nodes/**").permitAll()
+                .requestMatchers("/api/stats/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
                 .requestMatchers("/oauth2/**").permitAll()

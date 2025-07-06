@@ -33,7 +33,11 @@ public class NodeService {
     }
 
     public NodeDTO createNode(String name, String slug, String description) {
-        Node node = new Node(name, slug, description);
+        Node node = Node.builder()
+                .name(name)
+                .slug(slug)
+                .description(description)
+                .build();
         Node savedNode = nodeRepository.save(node);
         return convertToDTO(savedNode);
     }

@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
+import useAvatarCache from '../hooks/useAvatarCache';
 
 const TopicList = ({ topics }) => {
   const navigate = useNavigate();
+  const { getAvatarUrl } = useAvatarCache();
 
   const handleTopicClick = (topicId) => {
     navigate(`/topic/${topicId}`);
@@ -45,9 +47,9 @@ const TopicList = ({ topics }) => {
     <div className="topic-list">
       {topics.map((topic) => (
         <div key={topic.id} className="topic-item">
-          <img 
-            src={topic.author.avatar || 'https://i.imgur.com/8QmIp.png'}
-            alt={`${topic.author.username}的头像`} 
+          <img
+            src={getAvatarUrl(topic.author.id, topic.author.avatar || 'https://i.imgur.com/8QmIp.png')}
+            alt={`${topic.author.username}的头像`}
             className="avatar"
           />
           <div className="topic-content">

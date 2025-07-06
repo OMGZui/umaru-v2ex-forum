@@ -73,6 +73,16 @@ body {
   background: #f8f8f8;
 }
 
+.create-topic-btn {
+  background: #4CAF50 !important;
+  color: white !important;
+  border-color: #4CAF50 !important;
+}
+
+.create-topic-btn:hover {
+  background: #45a049 !important;
+}
+
 /* Main Content */
 .main {
   display: flex;
@@ -215,10 +225,35 @@ body {
   gap: 8px;
 }
 
+.member-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.member-item:hover {
+  opacity: 0.8;
+}
+
 .member-avatar {
   width: 32px;
   height: 32px;
   border-radius: 3px;
+  margin-bottom: 4px;
+}
+
+.member-name {
+  font-size: 11px;
+  color: #666;
+  text-align: center;
+  max-width: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* 登录页面样式 */

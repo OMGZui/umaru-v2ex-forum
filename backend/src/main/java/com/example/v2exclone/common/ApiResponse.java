@@ -1,6 +1,8 @@
 package com.example.v2exclone.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -8,6 +10,8 @@ import java.time.LocalDateTime;
  * 统一API响应格式
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Data
+@NoArgsConstructor
 public class ApiResponse<T> {
     
     /**
@@ -28,19 +32,12 @@ public class ApiResponse<T> {
     /**
      * 时间戳
      */
-    private LocalDateTime timestamp;
-    
+    private LocalDateTime timestamp = LocalDateTime.now();
+
     /**
      * 请求路径
      */
     private String path;
-    
-    /**
-     * 私有构造函数
-     */
-    private ApiResponse() {
-        this.timestamp = LocalDateTime.now();
-    }
     
     /**
      * 成功响应
@@ -125,46 +122,5 @@ public class ApiResponse<T> {
     public ApiResponse<T> path(String path) {
         this.setPath(path);
         return this;
-    }
-
-    // Getter and Setter methods
-    public Integer getCode() {
-        return code;
-    }
-
-    public void setCode(Integer code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
     }
 }

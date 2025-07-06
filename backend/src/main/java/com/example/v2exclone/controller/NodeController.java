@@ -5,6 +5,7 @@ import com.example.v2exclone.service.NodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import lombok.Data;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,34 +53,10 @@ public class NodeController {
     }
 
     // Inner class for request body
+    @Data
     public static class CreateNodeRequest {
         private String name;
         private String slug;
         private String description;
-
-        // Getters and Setters
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getSlug() {
-            return slug;
-        }
-
-        public void setSlug(String slug) {
-            this.slug = slug;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
     }
 }
